@@ -1,10 +1,17 @@
+import colorama
+from tabulate import tabulate
+from colorama import Fore, Back, Style
+
+
 def depth():
     while True:
-        print('ТУТ БУДЕТ ТАБЛИЦА ГЛУБИН')
+        for keys in depth_and_time:
+            print(keys)
+            print(tabulate(depth_and_time[keys], headers='keys', tablefmt='grid', stralign='center'))
         try:
             h = int(input('Введите глубину не менее 1м и не более 42м: '))
         except ValueError:
-            h = int(input('Вы ввели неправильное значение. \nВведите глубину не менее 1м и не более 42м: '))
+            continue
         if 0 < h <= 10:
             h = 10
         elif 10 <= h <= 22 and h % 2 != 0:
@@ -21,9 +28,7 @@ def depth():
             h = 42
         elif h > 42 or h <= 0:
             continue
-        print()
-        print(*depth_and_time[h].values())
-        print(*depth_and_time[h])
+        print(tabulate(depth_and_time[h], headers='keys', tablefmt='grid', stralign='center'))
         return h
 
 
@@ -32,10 +37,11 @@ def time(d):
         try:
             time_input = int(input('Введите время проведенное под водой в минутах: '))
         except ValueError:
-            time_input = int(input('Вы ввели неправильное значение. \nВведите время проведенное под водой в минутах: '))
-        if time_input > max(depth_and_time[d]):
-            print('Введенное вами время (' + str(time_input) + 'м) превышает бездекомпрессионный предел (' + str(max(depth_and_time[d])) + 'м).')
             continue
+        if time_input > max(depth_and_time[d]):
+            print('Введенное вами время', time_input, 'минут превышает бездекомпрессионный предел',
+                  max(depth_and_time[d]), 'минут.\nПринимаем его к расчетам.')
+            return max(depth_and_time[d])
         elif time_input > 0:
             return time_input
 
@@ -49,23 +55,54 @@ def first_dive(d, t):
             count += 1
             return next_dive(depth_and_time[d][depth_time])
         elif depth_time >= t:
-            return print('Группа по азоту после', count, 'погружения:', depth_and_time[d][depth_time])
+            print('Группа по азоту после', count, 'погружения:', depth_and_time[d][depth_time])
+            return print(Fore.RED, '\nПрофиль погружения:', Fore.BLUE, '\nГлубина погружения:', Fore.GREEN, d,
+                         Fore.MAGENTA, '\nВремя погружения:', Fore.RED, t, Fore.BLUE,
+                         '\nГруппа по азоту:', Fore.GREEN, depth_and_time[d][depth_time])
 
 
-def next_dive(nitro_group):
-    try:
-        t = int(input('Введите время отдыха на поверхности в минутах: '))
-    except ValueError:
-        t = int(input('Введите время отдыха на поверхности в минутах: '))
-    for i in relax_time[nitro_group]:
-        if t >= i:
-            print('Группа по азоту после отдыха на поверхности: ' + relax_time[nitro_group][i])
-            corrected_group = relax_time[nitro_group][i]
-            break
+def next_dive(nitro_group, depth_next=0, inp_text=0):
+    corrected_group = relax_group(nitro_group, inp_text)
     depth_next = depth()
+    while corrected_group not in corrected_time[depth_next]:
+        print('Слишко мало отдохнули. Введите большее время отдыха')
+        corrected_group = relax_group(nitro_group, inp_text)
     time_next = time(depth_next) + corrected_time[depth_next][corrected_group]
-    # print(corrected_group, depth_next, time_next)
-    return first_dive(depth_next, time_next)
+    max_time = max(depth_and_time[depth_next]) - corrected_time[depth_next][corrected_group]
+    if time_next > max(depth_and_time[depth_next]) and max_time > 0:
+        print('Максимально возможное время нахождения под водой с учетом отдыха составляет', max_time,
+              'минут.\nПринимаем его к расчетам.')
+        return first_dive(depth_next, max_time)
+    elif time_next < max(depth_and_time[depth_next]):
+        return first_dive(depth_next, time_next)
+    elif max_time <= 0:
+        print('Вы недостаточно отдохнули, чтобы погружаться на данную глубину')
+        while True:
+            try:
+                inp_text = input('Для выхода нажмите ENTER, для продолжения введите новое время отдыха: ')
+                break
+            except ValueError:
+                inp_text = 0
+                continue
+        if inp_text.isdigit():
+            return next_dive(nitro_group, depth_next, int(inp_text))
+        else:
+            return print('THE END')
+
+
+def relax_group(nitro_group, inp_text=0):
+    while True:
+        try:
+            if inp_text:
+                t = inp_text
+            else:
+                t = int(input('Введите время отдыха на поверхности в минутах: '))
+        except ValueError:
+            continue
+        for i in relax_time[nitro_group]:
+            if t >= i:
+                print('Группа по азоту после отдыха на поверхности:', relax_time[nitro_group][i])
+                return relax_time[nitro_group][i]
 
 
 depth_and_time = {
@@ -163,16 +200,16 @@ corrected_time = {
     35: {'A': 3, 'B': 5, 'C': 7, 'D': 8, 'E': 9, 'F': 9, 'G': 10, 'H': 11, 'I': 12, 'J': 13, 'K': 14},
     40: {'A': 2, 'B': 5, 'C': 6, 'D': 7, 'E': 7, 'F': 8, 'G': 9},
     42: {'A': 1, 'B': 4, 'C': 6, 'D': 6, 'E': 7, 'F': 8}}
-
-# corrected_time.update(corrected_time_exc)
-# print(corrected_time)
-# print(depth_and_time)
-try:
-    count_dives = int(input('Сколько планируется погружений? '))
-except ValueError:
-    count_dives = int(input('Ошибка. Введите число погружений:'))
 count = 1
+
+while True:
+    try:
+        count_dives = int(input('Сколько планируется погружений? '))
+        break
+    except ValueError:
+        continue
+
+colorama.init()
 depth_first = depth()
 time_first = time(depth_first)
 first_dive(depth_first, time_first)
-# next_dive('C')
