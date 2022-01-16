@@ -5,9 +5,9 @@ from colorama import Fore, Back, Style
 
 def depth():
     while True:
-        for keys in depth_and_time:
-            print(keys)
-            print(tabulate(depth_and_time[keys], headers='keys', tablefmt='grid', stralign='center'))
+        # for keys in depth_and_time:
+        #     print(keys)
+        #     print(tabulate(depth_and_time[keys], headers='keys', tablefmt='grid', stralign='center'))
         try:
             h = int(input('Введите глубину не менее 1м и не более 42м: '))
         except ValueError:
@@ -28,7 +28,8 @@ def depth():
             h = 42
         elif h > 42 or h <= 0:
             continue
-        print(tabulate(depth_and_time[h], headers='keys', tablefmt='grid', stralign='center'))
+        print('\nТаблица определения группы по азоту для глубины', h, 'метров.')
+        print(tabulate(depth_and_time[h], headers='keys', tablefmt='grid', stralign='center'), '\n')
         return h
 
 
