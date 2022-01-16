@@ -4,7 +4,7 @@ def depth():
         try:
             h = int(input('Введите глубину не менее 1м и не более 42м: '))
         except ValueError:
-            h = int(input('Ошибка. Введите число: '))
+            h = int(input('Вы ввели неправильное значение. \nВведите глубину не менее 1м и не более 42м: '))
         if 0 < h <= 10:
             h = 10
         elif 10 <= h <= 22 and h % 2 != 0:
@@ -27,17 +27,28 @@ def depth():
         return h
 
 
-def time():
+def time(d):
     while True:
         try:
-            x = int(input('Введите время проведенное под водой в минутах: '))
+            time_input = int(input('Введите время проведенное под водой в минутах: '))
         except ValueError:
-            print('Ошибка. Введите число')
+            time_input = int(input('Вы ввели неправильное значение. \nВведите время проведенное под водой в минутах: '))
+        if time_input > max(depth_and_time[d]):
+            print('Введенное вами время (' + str(time_input) + 'м) превышает бездекомпрессионный предел (' + str(max(depth_and_time[d])) + 'м).')
             continue
-        if 0 < x:
-            return x
-        else:
-            continue
+        elif time_input > 0:
+            return time_input
+
+
+def first_dive(d, t):
+    global count_dives
+    for depth_time in depth_and_time[d]:
+        if depth_time >= t and count_dives > 1:
+            print('Группа по азоту после первого погружения: ' + depth_and_time[d][depth_time])
+            count_dives -= 1
+            return next_dive(depth_and_time[d][depth_time])
+        elif depth_time >= t:
+            return print('Группа по азоту после первого погружения: ' + depth_and_time[d][depth_time])
 
 
 def next_dive(nitro_group):
@@ -51,18 +62,9 @@ def next_dive(nitro_group):
             corrected_group = relax_time[nitro_group][i]
             break
     depth_next = depth()
-    time_next = time() + corrected_time[depth_next][corrected_group]
+    time_next = time(depth_next) + corrected_time[depth_next][corrected_group]
     # print(corrected_group, depth_next, time_next)
     return first_dive(depth_next, time_next)
-
-
-def first_dive(d, t):
-    for depth_time in depth_and_time[d]:
-        if depth_time >= t and count_dives > 1:
-            print('Группа по азоту после первого погружения: ' + depth_and_time[d][depth_time])
-            return next_dive(depth_and_time[d][depth_time])
-        elif depth_time >= t:
-            return print('Группа по азоту после первого погружения: ' + depth_and_time[d][depth_time])
 
 
 depth_and_time = {
@@ -168,5 +170,7 @@ try:
     count_dives = int(input('Сколько планируется погружений? '))
 except ValueError:
     count_dives = int(input('Ошибка. Введите число погружений:'))
-first_dive(depth(), time())
+depth_first = depth()
+time_first = time(depth_first)
+first_dive(depth_first, time_first)
 # next_dive('C')
