@@ -41,14 +41,15 @@ def time(d):
 
 
 def first_dive(d, t):
-    global count_dives
+    global count_dives, count
     for depth_time in depth_and_time[d]:
         if depth_time >= t and count_dives > 1:
-            print('Группа по азоту после первого погружения: ' + depth_and_time[d][depth_time])
+            print('Группа по азоту после', count, 'погружения:', depth_and_time[d][depth_time])
             count_dives -= 1
+            count += 1
             return next_dive(depth_and_time[d][depth_time])
         elif depth_time >= t:
-            return print('Группа по азоту после первого погружения: ' + depth_and_time[d][depth_time])
+            return print('Группа по азоту после', count, 'погружения:', depth_and_time[d][depth_time])
 
 
 def next_dive(nitro_group):
@@ -170,6 +171,7 @@ try:
     count_dives = int(input('Сколько планируется погружений? '))
 except ValueError:
     count_dives = int(input('Ошибка. Введите число погружений:'))
+count = 1
 depth_first = depth()
 time_first = time(depth_first)
 first_dive(depth_first, time_first)
