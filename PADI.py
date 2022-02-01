@@ -1,6 +1,5 @@
-import colorama
 from tabulate import tabulate
-from colorama import Fore, Back, Style
+from colorama import Fore, Back, Style, init
 
 
 def depth():
@@ -210,7 +209,7 @@ while True:
     except ValueError:
         continue
 
-colorama.init()
+init()
 depth_first = depth()
 time_first = time(depth_first)
 first_dive(depth_first, time_first)
